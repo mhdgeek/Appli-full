@@ -72,16 +72,18 @@ stages {
     }
 
     stage('Push Docker Images') {
-        steps {
-            withCredentials([usernamePassword(credentialsId: 'king-hub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                script {
-                    sh "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin"
-                    sh "docker push ${env.DOCKER_HUB_USER}/${env.FRONT_IMAGE}:latest"
-                    sh "docker push ${env.DOCKER_HUB_USER}/${env.BACK_IMAGE}:latest"
-                }
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'king-hub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+            script {
+                sh '''
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    docker push ${DOCKER_HUB_USER}/${FRONT_IMAGE}:latest
+                    docker push ${DOCKER_HUB_USER}/${BACK_IMAGE}:latest
+                '''
             }
         }
     }
+}
 
     stage('Deploy to Kubernetes') {
         steps {
