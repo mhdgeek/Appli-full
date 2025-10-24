@@ -9,7 +9,7 @@ environment {
     DOCKER_HUB_USER = 'kingwest1'
     FRONT_IMAGE = 'react-frontend'
     BACK_IMAGE  = 'express-backend'
-    PATH = "/usr/local/bin:${env.PATH}"
+    //PATH = "/usr/local/bin:${env.PATH}"
     KUBECONFIG = "C:/Users/HP/.kube/config"
 }
 
