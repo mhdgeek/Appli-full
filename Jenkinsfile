@@ -6,7 +6,7 @@ tools {
 }
 
 environment {
-    DOCKER_HUB_USER = 'fatimaaaah'
+    DOCKER_HUB_USER = 'kingwest1'
     FRONT_IMAGE = 'react-frontend'
     BACK_IMAGE  = 'express-backend'
     PATH = "/usr/local/bin:${env.PATH}"
@@ -32,7 +32,7 @@ triggers {
 stages {
     stage('Checkout') {
         steps {
-            git branch: 'main', url: 'https://github.com/fatimaaaaah/application_MERN.git'
+            git branch: 'main', url: 'https://github.com/KingW223/Appli-full.git'
         }
     }
 
@@ -74,7 +74,7 @@ stages {
 
     stage('Push Docker Images') {
         steps {
-            withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+            withCredentials([usernamePassword(credentialsId: 'king-hub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                 script {
                     bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin"
                     bat "docker push ${env.DOCKER_HUB_USER}/${env.FRONT_IMAGE}:latest"
@@ -206,7 +206,7 @@ post {
             emailext(
                 subject: "SUCCÈS Build: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: "Le pipeline a réussi!\nConsultez: ${env.BUILD_URL}",
-                to: "fatimadiouf308@gmail.com"
+                to: "naziftelecom2@gmail.com"
             )
         }
     }
@@ -216,7 +216,7 @@ post {
         emailext(
             subject: "ÉCHEC Build: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
             body: "Le pipeline a échoué.\nDétails: ${env.BUILD_URL}",
-            to: "fatimadiouf308@gmail.com"
+            to: "naziftelecom2@gmail.com"
         )
     }
 
