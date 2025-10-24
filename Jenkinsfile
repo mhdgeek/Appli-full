@@ -77,7 +77,7 @@ stages {
             script {
                 sh '''
                     echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                    docker push ${DOCKER_HUB_USER}/${FRONT_IMAGE}:latest
+                    docker push ${DOCKER_HUB_USER}/${FRONT_IMAGE}:${BUILD_NUMBER}
                     docker push ${DOCKER_HUB_USER}/${BACK_IMAGE}:latest
                 '''
             }
