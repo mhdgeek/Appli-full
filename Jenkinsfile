@@ -10,7 +10,7 @@ environment {
     FRONT_IMAGE = 'react-frontend'
     BACK_IMAGE  = 'express-backend'
     PATH = "/usr/local/bin:${env.PATH}"
-    KUBECONFIG = "C:/Users/pc12/.kube/config"
+    KUBECONFIG = "C:/Users/HP/.kube/config"
 }
 
 triggers {
