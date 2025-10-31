@@ -55,7 +55,7 @@ pipeline {
                 ]) {
                     dir('infra') {
                         sh '''
-                            terraform apply -auto-approve -var-file=terraform.tfvars
+                            sh 'terraform apply -auto-approve -var-file=terraform.tfvars'
                             terraform output -json app_servers | jq -r '.[]' > ../ansible/hosts.txt
                         '''
                     }
