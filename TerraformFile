@@ -8,6 +8,7 @@ pipeline {
     environment {
         PATH = "/usr/local/bin:$PATH"
         AWS_DEFAULT_REGION = 'us-west-2'
+        ANSIBLE_HOST_KEY_CHECKING = 'False'
     }
 
     stages {
@@ -17,7 +18,7 @@ pipeline {
                     branches: [[name: '*/main']],
                     userRemoteConfigs: [[
                         credentialsId: 'github-jenkins',
-                        url: 'https://github.com/ndiayekhardiata2024/Depot_Jenkins.git'
+                        url: 'https://github.com/mhdgeek/Appli-full.git'
                     ]]
                 )
             }
@@ -26,15 +27,10 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 withCredentials([
-                    usernamePassword(
-                        credentialsId: 'aws-credentials',
-                        usernameVariable: 'AWS_ACCESS_KEY_ID',
-                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ),
-                    string(
-                        credentialsId: 'aws-session-token',
-                        variable: 'AWS_SESSION_TOKEN'
-                    )
+                    usernamePassword(credentialsId: 'aws-credential',
+                                     usernameVariable: 'AWS_ACCESS_KEY_ID',
+                                     passwordVariable: 'AWS_SECRET_ACCESS_KEY'),
+                    string(credentialsId: 'aws-session-token', variable: 'AWS_SESSION_TOKEN')
                 ]) {
                     dir('infra') {
                         sh '''
@@ -47,23 +43,54 @@ pipeline {
         }
 
         stage('Terraform Apply') {
+            when {
+                expression { return params.APPLY_INFRA }
+            }
             steps {
                 withCredentials([
-                    usernamePassword(
-                        credentialsId: 'aws-credentials',
-                        usernameVariable: 'AWS_ACCESS_KEY_ID',
-                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ),
-                    string(
-                        credentialsId: 'aws-session-token',
-                        variable: 'AWS_SESSION_TOKEN'
-                    )
+                    usernamePassword(credentialsId: 'aws-credential',
+                                     usernameVariable: 'AWS_ACCESS_KEY_ID',
+                                     passwordVariable: 'AWS_SECRET_ACCESS_KEY'),
+                    string(credentialsId: 'aws-session-token', variable: 'AWS_SESSION_TOKEN')
                 ]) {
                     dir('infra') {
                         sh '''
                             terraform apply -auto-approve -var-file=terraform.tfvars
+                            terraform output -json app_servers | jq -r '.[]' > ../ansible/hosts.txt
                         '''
                     }
+                }
+            }
+        }
+
+        stage('Generate Ansible Inventory') {
+            when {
+                expression { return params.APPLY_INFRA }
+            }
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'ssh-key', keyFileVariable: 'SSH_KEY_FILE', usernameVariable: 'SSH_USER')]) {
+                    dir('ansible') {
+                        sh '''
+                          echo "[app]" > inventory.ini
+                          while read ip; do
+                              echo "${ip} ansible_user=${SSH_USER} ansible_ssh_private_key_file=${SSH_KEY_FILE} ansible_python_interpreter=/usr/bin/python3" >> inventory.ini
+                          done < hosts.txt
+                          cat inventory.ini
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Configure Instances with Ansible') {
+            when {
+                expression { return params.APPLY_INFRA }
+            }
+            steps {
+                dir('ansible') {
+                    sh '''
+                        ansible-playbook -i inventory.ini playbook.yml --timeout=60
+                    '''
                 }
             }
         }

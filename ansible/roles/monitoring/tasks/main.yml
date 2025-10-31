@@ -1,0 +1,53 @@
+---
+- name: Create monitoring directory
+  file:
+    path: "{{ monitoring_path }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0755'
+
+- name: Copy prometheus.yml
+  copy:
+    src: ../files/prometheus.yml
+    dest: "{{ monitoring_path }}/prometheus.yml"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Create monitoring docker-compose
+  copy:
+    dest: "{{ monitoring_path }}/docker-compose.yml"
+    content: |
+      version: '3.8'
+      services:
+        prometheus:
+          image: prom/prometheus:latest
+          container_name: prometheus
+          ports:
+            - "9090:9090"
+          volumes:
+            - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+        grafana:
+          image: grafana/grafana:latest
+          container_name: grafana
+          ports:
+            - "3000:3000"
+          environment:
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD=admin
+          depends_on:
+            - prometheus
+      volumes:
+        prometheus_data: {}
+        grafana_data: {}
+
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Start monitoring stack
+  command: docker compose up -d
+  args:
+    chdir: "{{ monitoring_path }}"

@@ -1,0 +1,27 @@
+---
+- name: Create app directory
+  file:
+    path: "{{ app_path }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0755'
+
+- name: Copy docker-compose.yml
+  copy:
+    src: ../../files/docker-compose.yml
+    dest: "{{ app_path }}/docker-compose.yml"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Pull docker images (optional)
+  command: docker compose pull
+  args:
+    chdir: "{{ app_path }}"
+  ignore_errors: yes
+
+- name: Start application (docker-compose)
+  command: docker compose up -d
+  args:
+    chdir: "{{ app_path }}"

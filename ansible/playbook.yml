@@ -1,0 +1,13 @@
+---
+- name: Déploiement complet application + monitoring
+  hosts: app
+  become: yes
+  vars:
+    app_user: "{{ ansible_user | default('ubuntu') }}"
+    app_path: /home/{{ app_user }}/app
+    monitoring_path: /home/{{ app_user }}/monitoring
+
+  roles:
+    - docker
+    - app
+    - monitoring
