@@ -61,9 +61,6 @@ pipeline {
         }
 
         stage('Generate Ansible Inventory') {
-            when {
-                expression { return params.APPLY_INFRA }
-            }
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'ssh-key', keyFileVariable: 'SSH_KEY_FILE', usernameVariable: 'SSH_USER')]) {
                     dir('ansible') {
@@ -80,9 +77,6 @@ pipeline {
         }
 
         stage('Configure Instances with Ansible') {
-            when {
-                expression { return params.APPLY_INFRA }
-            }
             steps {
                 dir('ansible') {
                     sh '''
