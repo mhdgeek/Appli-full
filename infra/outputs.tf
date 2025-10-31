@@ -8,6 +8,8 @@ output "rds_endpoint" {
   value       = aws_db_instance.db.endpoint
 }
 
+# 📤 Sortie : IP publique du serveur EC2
 output "app_servers" {
-  value = aws_instance.app[*].public_ip
+  description = "Adresse(s) publique(s) des instances EC2"
+  value       = [aws_instance.web.public_ip]
 }
